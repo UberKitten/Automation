@@ -1,5 +1,6 @@
 ﻿using Nancy;
 using Nancy.Authentication.Stateless;
+using Nancy.Security;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -25,6 +26,17 @@ namespace Automation
                 {
                     token = context.Request.Cookies["TOKEN"];
                 }
+
+#if DEBUG
+                if (token == null)
+                {
+                    return new User
+                    {
+                        UserName = "Test",
+                        Claims = new string[] { "Garage", "Tag", "HVAC" }
+                    };
+                }
+#endif
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
