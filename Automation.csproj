@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="AutomationBootstrapper.cs" />
     <Compile Include="Models\Garage.cs" />
+    <Compile Include="Models\HVAC.cs" />
     <Compile Include="Modules\GarageModule.cs" />
     <Compile Include="Hubs\HVAC.cs" />
     <Compile Include="Modules\IndexModule.cs" />
