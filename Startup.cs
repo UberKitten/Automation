@@ -10,6 +10,7 @@ namespace Automation
     {
         public void Configuration(IAppBuilder app)
         {
+            app.MapHubs();
             app.UseNancy();
         }
     }
