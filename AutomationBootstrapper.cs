@@ -15,6 +15,10 @@ namespace Automation
         {
             base.ApplicationStartup(container, pipelines);
 
+#if !DEBUG
+            pipelines.BeforeRequest.AddItemToEndOfPipeline(SecurityHooks.RequiresHttps(true));
+#endif
+
             var statelessAuthenticationConfiguration = new StatelessAuthenticationConfiguration(context =>
             {
                 string token = context.Request.Headers["X-AUTH-TOKEN"].FirstOrDefault();
