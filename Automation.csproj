@@ -104,13 +104,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutomationBootstrapper.cs" />
-    <Compile Include="GarageModule.cs" />
-    <Compile Include="HVAC.cs" />
-    <Compile Include="IndexModule.cs" />
-    <Compile Include="ModuleSecurity.cs" />
+    <Compile Include="Modules\GarageModule.cs" />
+    <Compile Include="Hubs\HVAC.cs" />
+    <Compile Include="Modules\IndexModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="User.cs" />
+    <Compile Include="Models\User.cs" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

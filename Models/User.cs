@@ -10,20 +10,6 @@ namespace Automation
     {
         public string UserName { get; set; }
 
-        private List<String> _Claims;
-        public IEnumerable<string> Claims {
-            get
-            {
-                if (_Claims == null)
-                {
-                    _Claims = new List<string>();
-                }
-                return _Claims;
-            }
-            set
-            {
-                _Claims = new List<string>(value);
-            }
-        }
+        public IEnumerable<string> Claims { get; set; }
     }
 }
