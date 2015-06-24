@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Nancy.Security;
+using Automation.Models;
 
 namespace Automation
 {
@@ -18,10 +19,11 @@ namespace Automation
             Get["/garage/status"] = _ =>
                 {
                     return Negotiate
+                        .WithAllowedMediaRange("application/xml")
                         .WithAllowedMediaRange("application/json")
-                        .WithModel(new 
+                        .WithModel(new GarageStatus
                         {
-                            Open = 0
+                            Open = false
                         });
                 };
         }
