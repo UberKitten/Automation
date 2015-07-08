@@ -1,4 +1,5 @@
-﻿using Nancy;
+﻿using Microsoft.Azure;
+using Nancy;
 using Nancy.Authentication.Stateless;
 using Nancy.Security;
 using System;
@@ -44,17 +45,21 @@ namespace Automation
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
-                    using (var sql = new SqlConnection())
+                    using (var sql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
                     {
+                        sql.Open();
                         var check = sql.CreateCommand();
-                        check.CommandText = "SELECT [User].UserName AS UserName, Claim.Name AS Claim FROM Token  JOIN [User] on [User].Id = Token.UserId JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
+                        check.CommandText = "SELECT [User].UserName, Claim.Name FROM Token JOIN [User] on [User].Id = Token.UserId JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
                         check.Parameters.AddWithValue("token", token);
 
                         var user = new User();
                         using (var reader = check.ExecuteReader())
                         {
-                            user.UserName = Convert.ToString(reader["UserName"]);
-                            ((List<String>)user.Claims).Add(Convert.ToString(reader["Claim"]));
+                            while (reader.Read())
+                            {
+                                user.UserName = reader.GetString(0);
+                                ((List<String>)user.Claims).Add(reader.GetString(1));
+                            }
                         }
 
                         if (user.UserName != null)
