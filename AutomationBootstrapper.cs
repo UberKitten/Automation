@@ -47,7 +47,7 @@ namespace Automation
                     using (var sql = new SqlConnection())
                     {
                         var check = sql.CreateCommand();
-                        check.CommandText = "SELECT User.UserName AS UserName, Claim.Name AS Claim FROM Token WHERE Token.Id = @token JOIN User on User.Id = Token.UserId JOIN Claim on Claim.UserId = User.Id";
+                        check.CommandText = "SELECT [User].UserName AS UserName, Claim.Name AS Claim FROM Token  JOIN [User] on [User].Id = Token.UserId JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
                         check.Parameters.AddWithValue("token", token);
 
                         var user = new User();
