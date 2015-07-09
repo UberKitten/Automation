@@ -8,7 +8,7 @@ using Automation.Models;
 using System.Data.SqlClient;
 using Microsoft.Azure;
 
-namespace Automation
+namespace Automation.Modules
 {
     public class GarageModule : NancyModule
     {
