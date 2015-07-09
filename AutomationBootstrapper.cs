@@ -33,12 +33,13 @@ namespace Automation
                 }
 
 #if DEBUG
-                if (token == null)
+                var ip = System.Net.IPAddress.Parse(context.Request.UserHostAddress);
+                if (token == null && System.Net.IPAddress.IsLoopback(ip))
                 {
                     return new User
                     {
                         UserName = "Test",
-                        Claims = new string[] { "Garage", "Tag", "HVAC" }
+                        Claims = new string[] { "Garage", "Tag", "HVAC", "GroupMe", "Torrent" }
                     };
                 }
 #endif
