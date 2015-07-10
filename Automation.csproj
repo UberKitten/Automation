@@ -106,7 +106,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutomationBootstrapper.cs" />
@@ -118,6 +120,7 @@
     <Compile Include="Hubs\HVAC.cs" />
     <Compile Include="Modules\GroupMeModule.cs" />
     <Compile Include="Modules\IndexModule.cs" />
+    <Compile Include="Modules\EventModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Models\User.cs" />
