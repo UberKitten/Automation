@@ -40,7 +40,7 @@ namespace Automation.Modules
                                     .WithAllowedMediaRange("application/json")
                                     .WithModel(new GarageStatus
                                     {
-                                        Id = reader.GetInt16(0),
+                                        Id = reader.GetInt32(0),
                                         Timestamp = reader.GetDateTime(1),
                                         Open = reader.GetString(2) == "Open"
                                     });
