@@ -24,4 +24,14 @@ namespace Automation.Models
         public string text { get; set; }
         public long user_id { get; set; }
     }
+
+    public class GroupMeUptimeRobotAlert
+    {
+        public long monitorId { get; set; }
+        public string monitorURL { get; set; }
+        public string monitorFriendlyName { get; set; }
+        public int alertType { get; set; }
+        public string alertDetails { get; set; }
+        public string monitorAlertContacts { get; set; }
+    }
 }
