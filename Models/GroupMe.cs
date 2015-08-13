@@ -9,4 +9,19 @@ namespace Automation.Models
     {
         public string Name { get; set; }
     }
+
+    public class GroupMeChatMessage
+    {
+        public string avatar_url { get; set; }
+        public long created_at { get; set; }
+        public long group_id { get; set; }
+        public long id { get; set; }
+        public string name { get; set; }
+        public long sender_id { get; set; }
+        public string sender_type { get; set; }
+        public string source_guid { get; set; }
+        public bool system { get; set; }
+        public string text { get; set; }
+        public long user_id { get; set; }
+    }
 }

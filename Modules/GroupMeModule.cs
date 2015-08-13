@@ -24,6 +24,26 @@ namespace Automation.Modules
                 BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), model.Name + " is finished");
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
+
+            Post["/groupme/message/"] = _ =>
+            {
+                this.RequiresClaims(new[] { "GroupMe" });
+                var model = this.Bind<GroupMeChatMessage>();
+
+                var text = model.text.Trim();
+                var firstword = text.Substring(0, text.IndexOf(' '));
+                var command = text.Substring(text.IndexOf(' ') + 1);
+
+                if (firstword.Equals("@ChoreBot", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), command);
+                }
+                else if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), command);
+                }
+                return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
+            };
         }
 
         public static void BotPost(string botId, string message)
