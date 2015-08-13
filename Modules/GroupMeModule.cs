@@ -25,18 +25,12 @@ namespace Automation.Modules
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
 
-            Post["/uptime/alert"] = _ =>
+            Get["/uptime/alert"] = _ =>
             {
                 this.RequiresClaims(new[] { "GroupMe" });
                 var model = this.Bind<GroupMeUptimeRobotAlert>();
 
-                var text = model.monitorFriendlyName + " is ";
-                text += model.alertType == 1 ? "down" : "up";
-                if (!String.IsNullOrWhiteSpace(model.alertDetails))
-                {
-                    text += " (" + model.alertDetails + ")";
-                }
-
+                var text = model.monitorFriendlyName + " is " + (model.alertType == 1 ? "down" : "up");
                 BotPost(CloudConfigurationManager.GetSetting("GroupMeAutomationBot"), text);
 
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
