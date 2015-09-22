@@ -9,6 +9,8 @@ namespace Automation.Models
     {
         public string Name { get; set; }
         public string Description { get; set; }
+
+        public User User { get; set; }
     }
 
     public class ChoreGroup
@@ -19,6 +21,6 @@ namespace Automation.Models
         public DateTime CurrentRecurrenceStart { get; set; }
         public DateTime CurrentRecurrenceEnd { get; set; }
 
-        public Dictionary<Chore, User> Chores { get; set; }
+        public List<Chore> Chores { get; set; }
     }
 }
