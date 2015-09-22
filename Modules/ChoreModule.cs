@@ -83,7 +83,7 @@ namespace Automation.Modules
                                 SELECT [User].UserName, [User].GroupMeId FROM [User]
                                 JOIN ChoreGroupUser CGU ON CGU.UserId = [User].Id
                                 WHERE CGU.GroupId = @groupid
-                                ORDER BY [User].Id ASC";
+                                ORDER BY [User].UserName ASC";
                             choreUsers.Parameters.AddWithValue("groupid", choreGroupsReader.GetInt32(0));
 
                             var users = new List<User>();
@@ -102,7 +102,7 @@ namespace Automation.Modules
 
                             var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroupsReader.GetString(4), choreGroupsReader.GetInt32(5));
 
-                            var currentUserIndex = 0;
+                            var currentUserIndex = -1;
                             var lastRecurrence = choreGroup.StartDate;
                             foreach (var choreDate in choreRecurrence)
                             {
