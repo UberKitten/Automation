@@ -1,8 +1,10 @@
 ﻿using Automation.Models;
+using Microsoft.Azure;
 using Nancy;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 
@@ -12,18 +14,79 @@ namespace Automation.Modules
     {
         public ChoreModule()
         {
-            var recurrenceTest = new ChoreRecurrence(DateTime.Now, "day", 7);
-            foreach (var date in recurrenceTest)
-            {
-                Console.WriteLine(date.ToShortDateString());
-                System.Diagnostics.Debugger.Break();
-            }
+            GetChoresForDate(DateTime.Now);
         }
 
         public List<ChoreGroup> GetChoresForDate(DateTime date)
         {
             var result = new List<ChoreGroup>();
 
+            using (var choreGroupSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+            {
+                choreGroupSql.Open();
+
+                var queryChoreGroups = choreGroupSql.CreateCommand();
+                queryChoreGroups.CommandText = @"
+                    SELECT Id, Name, StartDate, EndDate, RecurrenceDatePart, RecurrenceCount FROM ChoreGroup
+                    WHERE StartDate < @datearg
+                    AND (EndDate IS NULL OR (EndDate < @datearg))";
+                queryChoreGroups.Parameters.AddWithValue("datearg", date);
+
+                using (var choreGroupsReader = queryChoreGroups.ExecuteReader())
+                {
+                    while (choreGroupsReader.Read())
+                    {
+                        using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+                        {
+                            choreSql.Open();
+
+                            var choreDetail = choreSql.CreateCommand();
+                            choreDetail.CommandText = @"
+                                SELECT Name, Description FROM Chore
+                                WHERE GroupId = @groupid
+                                ORDER BY Name ASC";
+                            choreDetail.Parameters.AddWithValue("groupid", choreGroupsReader.GetInt32(0));
+
+                            var chores = new List<Chore>();
+                            using (var choreDetailReader = choreDetail.ExecuteReader())
+                            {
+                                while (choreDetailReader.Read())
+                                {
+                                    chores.Add(
+                                        new Chore
+                                        {
+                                            Name = choreDetailReader.GetString(0),
+                                            Description = choreDetailReader.IsDBNull(1) ? null : choreDetailReader.GetString(1)
+                                        });
+                                }
+                            }
+
+                            var choreUsers = choreSql.CreateCommand();
+                            choreUsers.CommandText = @"
+                                SELECT [User].UserName, [User].GroupMeId FROM [User]
+                                JOIN ChoreGroupUser CGU ON CGU.UserId = [User].Id
+                                WHERE CGU.GroupId = @groupid
+                                ORDER BY [User].Id ASC";
+                            choreUsers.Parameters.AddWithValue("groupid", choreGroupsReader.GetInt32(0));
+
+                            var users = new List<User>();
+                            using (var choreUserReader = choreUsers.ExecuteReader())
+                            {
+                                while (choreUserReader.Read())
+                                {
+                                    users.Add(
+                                        new User
+                                        {
+                                            UserName = choreUserReader.GetString(0),
+                                            GroupMeId = choreUserReader.IsDBNull(1) ? -1 : choreUserReader.GetInt32(1)
+                                        });
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
 
             return result;
         }
