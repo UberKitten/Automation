@@ -16,6 +16,8 @@ namespace Automation.Models
         public string Name { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public DateTime CurrentRecurrenceStart { get; set; }
+        public DateTime CurrentRecurrenceEnd { get; set; }
 
         public Dictionary<Chore, User> Chores { get; set; }
     }

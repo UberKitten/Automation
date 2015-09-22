@@ -29,13 +29,21 @@ namespace Automation.Modules
                 queryChoreGroups.CommandText = @"
                     SELECT Id, Name, StartDate, EndDate, RecurrenceDatePart, RecurrenceCount FROM ChoreGroup
                     WHERE StartDate < @datearg
-                    AND (EndDate IS NULL OR (EndDate < @datearg))";
+                    AND (EndDate IS NULL OR (EndDate < @datearg))
+                    AND (SELECT COUNT(1) FROM ChoreGroupUser CGU WHERE CGU.GroupId = ChoreGroup.Id) > 0";
                 queryChoreGroups.Parameters.AddWithValue("datearg", date);
 
                 using (var choreGroupsReader = queryChoreGroups.ExecuteReader())
                 {
                     while (choreGroupsReader.Read())
                     {
+                        var choreGroup = new ChoreGroup {
+                            Name = choreGroupsReader.GetString(1),
+                            StartDate = choreGroupsReader.GetDateTime(2),
+                            EndDate = choreGroupsReader.IsDBNull(3) ? DateTime.MaxValue : choreGroupsReader.GetDateTime(3),
+                            Chores = new Dictionary<Chore,User>()
+                        };
+
                         using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
                         {
                             choreSql.Open();
@@ -82,9 +90,49 @@ namespace Automation.Modules
                                         });
                                 }
                             }
-                        }
-                    }
 
+                            var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroupsReader.GetString(4), choreGroupsReader.GetInt32(5));
+
+                            var currentUserIndex = 0;
+                            var lastRecurrence = choreGroup.StartDate;
+                            foreach (var choreDate in choreRecurrence)
+                            {
+                                // Loop through the user index we use later to start assigning
+                                currentUserIndex++;
+                                if (currentUserIndex >= users.Count)
+                                {
+                                    currentUserIndex = 0;
+                                }
+
+                                if (choreDate < date)
+                                {
+                                    lastRecurrence = choreDate;
+                                }
+                                else
+                                {
+                                    // We've passed the date, meaning we've found the right period
+                                    // Start assigning chores
+
+                                    var i = currentUserIndex;
+                                    foreach (var chore in chores)
+                                    {
+                                        choreGroup.Chores.Add(chore, users[i]);
+
+                                        i++;
+                                        if (i >= users.Count)
+                                        {
+                                            i = 0;
+                                        }
+                                    }
+
+                                    choreGroup.CurrentRecurrenceStart = lastRecurrence;
+                                    choreGroup.CurrentRecurrenceEnd = choreDate;
+                                    break;
+                                }
+                            }
+                        }
+                        result.Add(choreGroup);
+                    }
                 }
             }
 
