@@ -106,13 +106,6 @@ namespace Automation.Modules
                             var lastRecurrence = choreGroup.StartDate;
                             foreach (var choreDate in choreRecurrence)
                             {
-                                // Loop through the user index we use later to start assigning
-                                currentUserIndex++;
-                                if (currentUserIndex >= users.Count)
-                                {
-                                    currentUserIndex = 0;
-                                }
-
                                 if (choreDate <= date)
                                 {
                                     lastRecurrence = choreDate;
@@ -140,6 +133,13 @@ namespace Automation.Modules
                                     choreGroup.CurrentRecurrenceStart = lastRecurrence;
                                     choreGroup.CurrentRecurrenceEnd = choreDate;
                                     break;
+                                }
+
+                                // Loop through the user index we use later to start assigning
+                                currentUserIndex++;
+                                if (currentUserIndex >= users.Count)
+                                {
+                                    currentUserIndex = 0;
                                 }
                             }
                         }
