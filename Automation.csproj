@@ -112,10 +112,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutomationBootstrapper.cs" />
+    <Compile Include="Models\Chore.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="Models\Garage.cs" />
     <Compile Include="Models\GroupMe.cs" />
     <Compile Include="Models\HVAC.cs" />
+    <Compile Include="Modules\ChoreModule.cs" />
     <Compile Include="Modules\GarageModule.cs" />
     <Compile Include="Hubs\HVAC.cs" />
     <Compile Include="Modules\GroupMeModule.cs" />
