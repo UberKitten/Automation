@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
+using Nancy.Security;
 
 namespace Automation.Modules
 {
@@ -14,7 +15,15 @@ namespace Automation.Modules
     {
         public ChoreModule()
         {
-            GetChoresForDate(DateTime.Now);
+            this.RequiresAuthentication();
+
+            Get["/chore/{date:datetime}"] = _ =>
+            {
+                return Negotiate
+                    .WithAllowedMediaRange("application/xml")
+                    .WithAllowedMediaRange("application/json")
+                    .WithModel(GetChoresForDate((DateTime)_.date));
+            };
         }
 
         public List<ChoreGroup> GetChoresForDate(DateTime date)
@@ -41,7 +50,7 @@ namespace Automation.Modules
                             Name = choreGroupsReader.GetString(1),
                             StartDate = choreGroupsReader.GetDateTime(2),
                             EndDate = choreGroupsReader.IsDBNull(3) ? DateTime.MaxValue : choreGroupsReader.GetDateTime(3),
-                            Chores = new Dictionary<Chore,User>()
+                            Chores = new List<Chore>()
                         };
 
                         using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
@@ -116,7 +125,10 @@ namespace Automation.Modules
                                     var i = currentUserIndex;
                                     foreach (var chore in chores)
                                     {
-                                        choreGroup.Chores.Add(chore, users[i]);
+                                        choreGroup.Chores.Add(new Chore
+                                        {
+                                            User = users[i]
+                                        });
 
                                         i++;
                                         if (i >= users.Count)
