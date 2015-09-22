@@ -37,7 +37,7 @@ namespace Automation.Modules
                 var queryChoreGroups = choreGroupSql.CreateCommand();
                 queryChoreGroups.CommandText = @"
                     SELECT Id, Name, StartDate, EndDate, RecurrenceDatePart, RecurrenceCount FROM ChoreGroup
-                    WHERE StartDate < @datearg
+                    WHERE StartDate <= @datearg
                     AND (EndDate IS NULL OR (EndDate < @datearg))
                     AND (SELECT COUNT(1) FROM ChoreGroupUser CGU WHERE CGU.GroupId = ChoreGroup.Id) > 0";
                 queryChoreGroups.Parameters.AddWithValue("datearg", date);
