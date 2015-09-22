@@ -113,7 +113,7 @@ namespace Automation.Modules
                                     currentUserIndex = 0;
                                 }
 
-                                if (choreDate < date)
+                                if (choreDate <= date)
                                 {
                                     lastRecurrence = choreDate;
                                 }
