@@ -26,7 +26,7 @@ namespace Automation.Modules
             };
         }
 
-        public List<ChoreGroup> GetChoresForDate(DateTime date)
+        public static List<ChoreGroup> GetChoresForDate(DateTime date)
         {
             var result = new List<ChoreGroup>();
 

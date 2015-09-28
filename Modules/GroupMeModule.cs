@@ -8,6 +8,7 @@ using Nancy.Security;
 using Microsoft.Azure;
 using Nancy.ModelBinding;
 using Automation.Models;
+using System.Text.RegularExpressions;
 
 namespace Automation.Modules
 {
@@ -42,11 +43,22 @@ namespace Automation.Modules
                 var model = this.Bind<GroupMeChatMessage>();
 
                 var text = model.text.Trim();
-                var firstword = text.Substring(0, text.IndexOf(' '));
-                var command = text.Substring(text.IndexOf(' ') + 1);
+                var firstword = Regex.Match(text, @"\S+").Value;
+                var commandRegex = Regex.Match(text, @"\S+ (.*)");
+                var command = commandRegex.Value;
 
                 if (firstword.Equals("@ChoreBot", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    // Empty command
+                    if (String.IsNullOrWhiteSpace(command))
+                    {
+                        var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
+                        foreach (var choreGroup in choreGroups.Where(t => t.Chores.Count > 0))
+                        {
+                            PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"));
+                        }
+                    }
+
                     BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), command);
                 }
                 else if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
@@ -55,6 +67,17 @@ namespace Automation.Modules
                 }
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
+        }
+        
+        private void PostChoreGroup(ChoreGroup choreGroup, string botId)
+        {
+            var client = new RestClient("https://api.groupme.com/v3");
+
+            var request = new RestRequest("groups", Method.GET);
+            request.AddParameter("bot_id", botId);
+
+            var response = client.Execute(request);
+            ;
         }
 
         public static void BotPost(string botId, string message)
