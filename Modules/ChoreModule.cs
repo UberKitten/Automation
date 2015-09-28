@@ -112,7 +112,7 @@ namespace Automation.Modules
                             foreach (var chorePeriod in choreRecurrence)
                             {
                                 // We're in the chore period
-                                if (chorePeriod.Item1 <= date && date <= chorePeriod.Item2)
+                                if (chorePeriod.Item1 <= date && date < chorePeriod.Item2)
                                 {
                                     // We've passed the date, meaning we've found the right period
                                     // Start assigning chores
@@ -138,7 +138,7 @@ namespace Automation.Modules
                                 }
 
                                 // We're past the chore period, must have skipped this date
-                                if (chorePeriod.Item2 <= date)
+                                if (chorePeriod.Item2 < date)
                                 {
                                     break;
                                 }
@@ -192,7 +192,7 @@ namespace Automation.Modules
                     startDateTime = endDateTime;
                     if (!String.IsNullOrEmpty(skip))
                     {
-                        startDateTime = SqlDateAdd(endDateTime, skip, skipCount);
+                        startDateTime = SqlDateAdd(startDateTime, skip, skipCount);
                     }
                     endDateTime = SqlDateAdd(startDateTime, recurrence, recurrenceCount);
                 }
