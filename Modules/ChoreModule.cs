@@ -36,7 +36,7 @@ namespace Automation.Modules
 
                 var queryChoreGroups = choreGroupSql.CreateCommand();
                 queryChoreGroups.CommandText = @"
-                    SELECT Id, Name, StartDate, EndDate, RecurrenceDatePart, RecurrenceCount FROM ChoreGroup
+                    SELECT Id, Name, StartDate, EndDate, RecurrenceDatePart, RecurrenceCount, SkipDatePart, SkipCount FROM ChoreGroup
                     WHERE StartDate <= @datearg
                     AND (EndDate IS NULL OR (EndDate < @datearg))
                     AND (SELECT COUNT(1) FROM ChoreGroupUser CGU WHERE CGU.GroupId = ChoreGroup.Id) > 0";
@@ -53,6 +53,12 @@ namespace Automation.Modules
                             Chores = new List<Chore>()
                         };
 
+                        var choreGroupId = choreGroupsReader.GetInt32(0);
+                        var choreGroupRecurrenceDatePart = choreGroupsReader.GetString(4);
+                        var choreGroupRecurrenceCount = choreGroupsReader.GetInt32(5);
+                        var choreGroupSkipDatePart = choreGroupsReader.IsDBNull(6) ? null : choreGroupsReader.GetString(6);
+                        int? choreGroupSkipCount = choreGroupsReader.IsDBNull(7) ? (int?)null : choreGroupsReader.GetInt32(7);
+
                         using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
                         {
                             choreSql.Open();
@@ -62,7 +68,7 @@ namespace Automation.Modules
                                 SELECT Name, Description FROM Chore
                                 WHERE GroupId = @groupid
                                 ORDER BY Name ASC";
-                            choreDetail.Parameters.AddWithValue("groupid", choreGroupsReader.GetInt32(0));
+                            choreDetail.Parameters.AddWithValue("groupid", choreGroupId);
 
                             var chores = new List<Chore>();
                             using (var choreDetailReader = choreDetail.ExecuteReader())
@@ -84,7 +90,7 @@ namespace Automation.Modules
                                 JOIN ChoreGroupUser CGU ON CGU.UserId = [User].Id
                                 WHERE CGU.GroupId = @groupid
                                 ORDER BY [User].UserName ASC";
-                            choreUsers.Parameters.AddWithValue("groupid", choreGroupsReader.GetInt32(0));
+                            choreUsers.Parameters.AddWithValue("groupid", choreGroupId);
 
                             var users = new List<User>();
                             using (var choreUserReader = choreUsers.ExecuteReader())
@@ -100,17 +106,13 @@ namespace Automation.Modules
                                 }
                             }
 
-                            var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroupsReader.GetString(4), choreGroupsReader.GetInt32(5));
+                            var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroupRecurrenceDatePart, choreGroupRecurrenceCount, choreGroupSkipDatePart, choreGroupSkipCount);
 
-                            var currentUserIndex = -1;
-                            var lastRecurrence = choreGroup.StartDate;
-                            foreach (var choreDate in choreRecurrence)
+                            var currentUserIndex = 0;
+                            foreach (var chorePeriod in choreRecurrence)
                             {
-                                if (choreDate <= date)
-                                {
-                                    lastRecurrence = choreDate;
-                                }
-                                else
+                                // We're in the chore period
+                                if (chorePeriod.Item1 <= date && date <= chorePeriod.Item2)
                                 {
                                     // We've passed the date, meaning we've found the right period
                                     // Start assigning chores
@@ -130,8 +132,14 @@ namespace Automation.Modules
                                         }
                                     }
 
-                                    choreGroup.CurrentRecurrenceStart = lastRecurrence;
-                                    choreGroup.CurrentRecurrenceEnd = choreDate;
+                                    choreGroup.CurrentRecurrenceStart = chorePeriod.Item1;
+                                    choreGroup.CurrentRecurrenceEnd = chorePeriod.Item2;
+                                    break;
+                                }
+
+                                // We're past the chore period, must have skipped this date
+                                if (chorePeriod.Item2 <= date)
+                                {
                                     break;
                                 }
 
@@ -151,78 +159,84 @@ namespace Automation.Modules
             return result;
         }
         
-        public class ChoreRecurrence : IEnumerable<DateTime>, IEnumerator<DateTime>
+        public class ChoreRecurrence : IEnumerable<Tuple<DateTime, DateTime>>, IEnumerator<Tuple<DateTime, DateTime>>
         {
             private DateTime startDate;
             private string recurrence;
             private int recurrenceCount;
+            private string skip;
+            private int skipCount;
 
-            public ChoreRecurrence(DateTime startDate, string recurrence, int recurrenceCount)
+            public ChoreRecurrence(DateTime startDate, string recurrence, int recurrenceCount, string skip, int? skipCount)
             {
                 this.startDate = startDate;
                 this.recurrence = recurrence;
                 this.recurrenceCount = recurrenceCount;
+                this.skip = skip;
+                this.skipCount = skipCount.HasValue ? skipCount.Value : 0; // We don't use -1 because it's a valid argument to SqlDateAdd
             }
 
-            private DateTime currentDateTime = DateTime.MinValue;
+            private DateTime startDateTime = DateTime.MinValue;
+            private DateTime endDateTime = DateTime.MinValue;
 
             public bool MoveNext()
             {
                 // IEnumerator specifies that we start before the first element in the collection
-                if (currentDateTime == DateTime.MinValue)
+                if (startDateTime == DateTime.MinValue)
                 {
-                    currentDateTime = startDate;
+                    startDateTime = startDate;
+                    endDateTime = SqlDateAdd(startDateTime, recurrence, recurrenceCount);
                 }
                 else
                 {
-                    switch (recurrence)
+                    startDateTime = endDateTime;
+                    if (!String.IsNullOrEmpty(skip))
                     {
-                        case "year":
-                            currentDateTime = currentDateTime.AddYears(1 * recurrenceCount);
-                            break;
-                        case "quarter":
-                            currentDateTime = currentDateTime.AddMonths(3 * recurrenceCount);
-                            break;
-                        case "month":
-                            currentDateTime = currentDateTime.AddMonths(1 * recurrenceCount);
-                            break;
-                        case "dayofyear":
-                            currentDateTime = currentDateTime.AddDays(1 * recurrenceCount);
-                            break;
-                        case "day":
-                            currentDateTime = currentDateTime.AddDays(1 * recurrenceCount);
-                            break;
-                        case "week":
-                            currentDateTime = currentDateTime.AddDays(7 * recurrenceCount);
-                            break;
-                        case "hour":
-                            currentDateTime = currentDateTime.AddHours(1 * recurrenceCount);
-                            break;
-                        case "minute":
-                            currentDateTime = currentDateTime.AddMinutes(1 * recurrenceCount);
-                            break;
-                        case "second":
-                            currentDateTime = currentDateTime.AddSeconds(1 * recurrenceCount);
-                            break;
-                        case "millisecond":
-                            currentDateTime = currentDateTime.AddMilliseconds(1 * recurrenceCount);
-                            break;
-                        case "microsecond":
-                            throw new NotSupportedException("Sub-millisecond recurrence types are not supported");
-                        case "nanosecond":
-                            throw new NotSupportedException("Sub-millisecond recurrence types are not supported");
-                        default:
-                            throw new NotSupportedException("Recurrence type not recognized");
+                        startDateTime = SqlDateAdd(endDateTime, skip, skipCount);
                     }
+                    endDateTime = SqlDateAdd(startDateTime, recurrence, recurrenceCount);
                 }
                 return true;
             }
 
-            public DateTime Current
+            public static DateTime SqlDateAdd(DateTime currentDateTime, string datePart, int count)
+            {
+                switch (datePart.ToLower())
+                {
+                    case "year":
+                        return currentDateTime.AddYears(1 * count);
+                    case "quarter":
+                        return currentDateTime.AddMonths(3 * count);
+                    case "month":
+                        return currentDateTime.AddMonths(1 * count);
+                    case "dayofyear":
+                        return currentDateTime.AddDays(1 * count);
+                    case "day":
+                        return currentDateTime.AddDays(1 * count);
+                    case "week":
+                        return currentDateTime.AddDays(7 * count);
+                    case "hour":
+                        return currentDateTime.AddHours(1 * count);
+                    case "minute":
+                        return currentDateTime.AddMinutes(1 * count);
+                    case "second":
+                        return currentDateTime.AddSeconds(1 * count);
+                    case "millisecond":
+                        return currentDateTime.AddMilliseconds(1 * count);
+                    case "microsecond":
+                        throw new NotSupportedException("Sub-millisecond recurrence types are not supported");
+                    case "nanosecond":
+                        throw new NotSupportedException("Sub-millisecond recurrence types are not supported");
+                    default:
+                        throw new NotSupportedException("Recurrence type not recognized");
+                }
+            } 
+
+            public Tuple<DateTime, DateTime> Current
             {
                 get
                 {
-                    return currentDateTime;
+                    return new Tuple<DateTime, DateTime>(startDateTime, endDateTime);
                 }
             }
 
@@ -236,10 +250,11 @@ namespace Automation.Modules
 
             public void Reset()
             {
-                currentDateTime = DateTime.MinValue;
+                startDateTime = DateTime.MinValue;
+                endDateTime = DateTime.MinValue; ;
             }
 
-            public IEnumerator<DateTime> GetEnumerator()
+            public IEnumerator<Tuple<DateTime, DateTime>> GetEnumerator()
             {
                 return this;
             }
