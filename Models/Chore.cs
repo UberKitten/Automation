@@ -18,6 +18,10 @@ namespace Automation.Models
         public string Name { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public string RecurrenceDatePart { get; set; }
+        public int RecurrenceCount { get; set; }
+        public string SkipDatePart { get; set; }
+        public int SkipCount { get; set; }
         public DateTime CurrentRecurrenceStart { get; set; }
         public DateTime CurrentRecurrenceEnd { get; set; }
 

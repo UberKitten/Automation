@@ -50,14 +50,14 @@ namespace Automation.Modules
                             Name = choreGroupsReader.GetString(1),
                             StartDate = choreGroupsReader.GetDateTime(2),
                             EndDate = choreGroupsReader.IsDBNull(3) ? DateTime.MaxValue : choreGroupsReader.GetDateTime(3),
+                            RecurrenceDatePart = choreGroupsReader.GetString(4),
+                            RecurrenceCount = choreGroupsReader.GetInt32(5),
+                            SkipDatePart = choreGroupsReader.IsDBNull(6) ? null : choreGroupsReader.GetString(6),
+                            SkipCount = choreGroupsReader.IsDBNull(7) ? 0 : choreGroupsReader.GetInt32(7),
                             Chores = new List<Chore>()
                         };
 
                         var choreGroupId = choreGroupsReader.GetInt32(0);
-                        var choreGroupRecurrenceDatePart = choreGroupsReader.GetString(4);
-                        var choreGroupRecurrenceCount = choreGroupsReader.GetInt32(5);
-                        var choreGroupSkipDatePart = choreGroupsReader.IsDBNull(6) ? null : choreGroupsReader.GetString(6);
-                        int? choreGroupSkipCount = choreGroupsReader.IsDBNull(7) ? (int?)null : choreGroupsReader.GetInt32(7);
 
                         using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
                         {
@@ -106,7 +106,7 @@ namespace Automation.Modules
                                 }
                             }
 
-                            var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroupRecurrenceDatePart, choreGroupRecurrenceCount, choreGroupSkipDatePart, choreGroupSkipCount);
+                            var choreRecurrence = new ChoreRecurrence(choreGroup.StartDate, choreGroup.RecurrenceDatePart, choreGroup.RecurrenceCount, choreGroup.SkipDatePart, choreGroup.SkipCount);
 
                             var currentUserIndex = 0;
                             foreach (var chorePeriod in choreRecurrence)
@@ -120,10 +120,8 @@ namespace Automation.Modules
                                     var i = currentUserIndex;
                                     foreach (var chore in chores)
                                     {
-                                        choreGroup.Chores.Add(new Chore
-                                        {
-                                            User = users[i]
-                                        });
+                                        chore.User = users[i];
+                                        choreGroup.Chores.Add(chore);
 
                                         i++;
                                         if (i >= users.Count)
@@ -138,7 +136,7 @@ namespace Automation.Modules
                                 }
 
                                 // We're past the chore period, must have skipped this date
-                                if (chorePeriod.Item2 < date)
+                                if (date < chorePeriod.Item1)
                                 {
                                     break;
                                 }
