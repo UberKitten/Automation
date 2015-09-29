@@ -25,6 +25,65 @@ namespace Automation.Models
         public long user_id { get; set; }
     }
 
+    public class GroupMeResponseWrapper<T>
+    {
+        public GroupMeResponseMeta meta { get; set; }
+
+        public T response { get; set; }
+    }
+
+    public class GroupMeResponseMeta
+    {
+        public int code { get; set; }
+    }
+
+    public class GroupMeGroup
+    {
+        public long created_at { get; set; }
+        public long creator_user_id { get; set; }
+        public string description { get; set; }
+        public long group_id { get; set; }
+        public long id { get; set; }
+        public string image_url { get; set; }
+        public int max_members { get; set; }
+        public string name { get; set; }
+        public bool office_mode { get; set; }
+        public string phone_number { get; set; }
+        public string share_url { get; set; }
+        public string type { get; set; }
+        public long updated_at { get; set; }
+
+        public List<GroupMeGroupMember> members { get; set; }
+
+        public List<GroupMeGroupMessages> messages { get; set; }
+    }
+
+    public class GroupMeGroupMember
+    {
+        public bool autokicked { get; set; }
+        public long id { get; set; }
+        public string image_url { get; set; }
+        public bool muted { get; set; }
+        public string nickname { get; set; }
+        public long user_id { get; set; }
+    }
+
+    public class GroupMeGroupMessages
+    {
+        public long last_message_created_at { get; set; }
+        public long last_message_id { get; set; }
+
+        public GroupMeGroupMessagesPreview preview { get; set; }
+    }
+
+    public class GroupMeGroupMessagesPreview
+    {
+        public List<object> attachments { get; set; }
+        public string image_url { get; set; }
+        public string nickname { get; set; }
+        public string text { get; set; }
+    }
+
     public class GroupMeUptimeRobotAlert
     {
         public long monitorId { get; set; }
@@ -33,5 +92,24 @@ namespace Automation.Models
         public int alertType { get; set; }
         public string alertDetails { get; set; }
         public string monitorAlertContacts { get; set; }
+    }
+
+    [Flags]
+    public enum GroupMeChoreGroupDetail
+    {
+        None = 0,
+        Name = 1 << 0,
+        Schedule = 1 << 1,
+        ScheduleDates = 1 << 2
+    }
+
+    [Flags]
+    public enum GroupMeChoreDetail
+    {
+        None = 0,
+        Name = 1 << 0,
+        Description = 1 << 1,
+        CurrentUser = 1 << 2,
+        CurrentUserMention = 1 << 3
     }
 }
