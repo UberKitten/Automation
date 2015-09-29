@@ -233,7 +233,6 @@ namespace Automation.Modules
                 if (!String.IsNullOrEmpty(text))
                 {
                     BotPost(botId, text);
-                    System.Threading.Thread.Sleep(500);
                 }
             }
 
@@ -334,6 +333,7 @@ namespace Automation.Modules
 #if DEBUG
             System.Diagnostics.Debug.WriteLine(message);
 #else
+            System.Threading.Thread.Sleep(500);
             var client = new RestClient("https://api.groupme.com/v3");
 
             var request = new RestRequest("bots/post", Method.POST);
