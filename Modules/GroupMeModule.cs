@@ -50,6 +50,7 @@ namespace Automation.Modules
                 if (firstword.Equals("@ChoreBot", StringComparison.CurrentCultureIgnoreCase))
                 {
                     bool answerFound = false;
+                    bool dateSpecified = false;
 
                     // Let empty commands fall straight though
                     if (!String.IsNullOrWhiteSpace(command))
@@ -64,6 +65,7 @@ namespace Automation.Modules
                         {
                             // Retrieve chores using that date
                             choreGroups = ChoreModule.GetChoresForDate(parseObj.Start.Value);
+                            dateSpecified = true;
                         }
                         else
                         {
@@ -130,7 +132,7 @@ namespace Automation.Modules
                                 var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser;
 
                                 // If specific date requested use dates and don't include description
-                                if (parseObj != null && parseObj.Start.HasValue)
+                                if (dateSpecified)
                                 {
                                     choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.ScheduleDates;
                                 }
@@ -152,13 +154,25 @@ namespace Automation.Modules
                     // Post every group with little detail
                     if (!answerFound)
                     {
+                        var choreGroupDetail = GroupMeChoreGroupDetail.Name;
+                        var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser;
+
+                        // If specific date requested use dates and don't include description
+                        if (dateSpecified)
+                        {
+                            choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.ScheduleDates;
+                        }
+                        else
+                        {
+                            choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.Schedule;
+                            choreDetail = choreDetail | GroupMeChoreDetail.Description;
+                        }
+
                         var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
                         foreach (var choreGroup in choreGroups.Where(t => t.Chores.Count > 0))
                         {
                             PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
-                                GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.Schedule,
-                                GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser
-                                );
+                                choreGroupDetail, choreDetail);
                         }
                     }
                 }
