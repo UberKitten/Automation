@@ -347,7 +347,7 @@ namespace Automation.Modules
 #if DEBUG
             System.Diagnostics.Debug.WriteLine(message);
 #else
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(750);
             var client = new RestClient("https://api.groupme.com/v3");
 
             var request = new RestRequest("bots/post", Method.POST);
