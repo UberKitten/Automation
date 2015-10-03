@@ -45,7 +45,7 @@ namespace Automation.Modules
                 var text = model.text.Trim();
                 var firstword = Regex.Match(text, @"\S+").Value;
                 var commandRegex = Regex.Match(text, @"\S+ (.*)");
-                var command = commandRegex.Groups[commandRegex.Groups.Count - 1].Value;
+                var command = commandRegex.Groups[commandRegex.Groups.Count - 1].Value.ToLower();
 
                 if (firstword.Equals("@ChoreBot", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -93,7 +93,7 @@ namespace Automation.Modules
                         {
                             // Check user names
                             var userNameChores = choreGroups.SelectMany(t => t.Chores)
-                                .Where(t => command.ToLower().Contains(t.User.UserName.ToLower()));
+                                .Where(t => command.Contains(t.User.UserName.ToLower()));
 
                             foreach (var chore in userNameChores)
                             {
@@ -110,26 +110,44 @@ namespace Automation.Modules
                         if (!answerFound)
                         {
                             var choreNames = choreGroups.SelectMany(t => t.Chores)
-                                .Where(t => command.ToLower().Contains(t.Name.ToLower()));
+                                .Where(t => command.Contains(t.Name.ToLower()));
 
                             foreach (var chore in choreNames)
                             {
                                 answerFound = true;
 
-                                PostChore(chore, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
-                                    GroupMeChoreDetail.Name | GroupMeChoreDetail.Description | GroupMeChoreDetail.CurrentUser);
+                                var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.Description;
+                                if (command.Contains("notify"))
+                                {
+                                    choreDetail = choreDetail | GroupMeChoreDetail.CurrentUserMention;
+                                }
+                                else
+                                {
+                                    choreDetail = choreDetail | GroupMeChoreDetail.CurrentUser;
+                                }
+
+                                PostChore(chore, CloudConfigurationManager.GetSetting("GroupMeChoreBot"), choreDetail);
                             }
                         }
 
                         // Search for a chore group name
                         if (!answerFound)
                         {
-                            var nameChoreGroups = choreGroups.Where(t => command.ToLower().Contains(t.Name.ToLower()));
+                            var nameChoreGroups = choreGroups.Where(t => command.Contains(t.Name.ToLower()));
 
                             foreach (var choreGroup in nameChoreGroups)
                             {
                                 var choreGroupDetail = GroupMeChoreGroupDetail.Name;
-                                var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser;
+                                var choreDetail = GroupMeChoreDetail.Name;
+
+                                if (command.Contains("notify"))
+                                {
+                                    choreDetail = choreDetail | GroupMeChoreDetail.CurrentUserMention;
+                                }
+                                else
+                                {
+                                    choreDetail = choreDetail | GroupMeChoreDetail.CurrentUser;
+                                }
 
                                 // If specific date requested use dates and don't include description
                                 if (dateSpecified)
@@ -184,7 +202,7 @@ namespace Automation.Modules
                             // Usage details
                             if (command.Contains("help"))
                             {
-                                BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), "Commands: all, my/me/mine, person name, chore group name, chore name");
+                                BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), "Commands: all, my/me/mine, person name, chore group name (+ notify), chore name");
                                 BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), "All commands can be combined with a relative or absolute date: tomorrow, next Monday, 9/2, last month, etc");
 
                                 answerFound = true;
@@ -349,8 +367,15 @@ namespace Automation.Modules
                         // Use Current User w/ mentioning
                         if (choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention) && group != null)
                         {
-                            var groupMeUser = group.members.Single(t => t.id == chore.User.GroupMeId);
-                            text += " (@" + groupMeUser.nickname + ")";
+                            var groupMeUser = group.members.SingleOrDefault(t => t.id == chore.User.GroupMeId);
+                            if (groupMeUser == null)
+                            {
+                                text += " - @" + chore.User.UserName;
+                            }
+                            else
+                            {
+                                text += " - @" + groupMeUser.nickname;
+                            }
                         }
                         text += ": " + chore.Description;
                     }
