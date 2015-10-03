@@ -367,7 +367,7 @@ namespace Automation.Modules
                         // Use Current User w/ mentioning
                         if (choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention) && group != null)
                         {
-                            var groupMeUser = group.members.SingleOrDefault(t => t.id == chore.User.GroupMeId);
+                            var groupMeUser = group.members.SingleOrDefault(t => t.user_id == chore.User.GroupMeId);
                             if (groupMeUser == null)
                             {
                                 text += " - @" + chore.User.UserName;
@@ -390,7 +390,7 @@ namespace Automation.Modules
                         // Use Current User w/ mentioning
                         if (choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention) && group != null)
                         {
-                            var groupMeUser = group.members.SingleOrDefault(t => t.id == chore.User.GroupMeId);
+                            var groupMeUser = group.members.SingleOrDefault(t => t.user_id == chore.User.GroupMeId);
                             if (groupMeUser == null)
                             {
                                 text += " - @" + chore.User.UserName;
