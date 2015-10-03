@@ -377,7 +377,7 @@ namespace Automation.Modules
                                 text += " - @" + groupMeUser.nickname;
                             }
                         }
-                        text += ": " + chore.Description;
+                        text += " - " + chore.Description;
                     }
                     // Don't use Description
                     else
