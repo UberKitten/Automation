@@ -347,6 +347,12 @@ namespace Automation.Modules
         
         private void PostChore(Chore chore, string botId, GroupMeChoreDetail choreDetail, GroupMeGroup group = null)
         {
+            // Only get group info if we need it to @mention
+            if (group == null && choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention))
+            {
+                group = GetGroupInfo(CloudConfigurationManager.GetSetting("GroupMeGroupId"));
+            }
+
             // Not "None"
             if (choreDetail != 0)
             {
