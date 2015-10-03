@@ -100,7 +100,8 @@ namespace Automation.Models
         None = 0,
         Name = 1 << 0,
         Schedule = 1 << 1,
-        ScheduleDates = 1 << 2
+        ScheduleDates = 1 << 2,
+        ListChoreNames = 1 << 3
     }
 
     [Flags]

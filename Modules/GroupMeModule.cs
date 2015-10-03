@@ -149,13 +149,54 @@ namespace Automation.Modules
                             }
                         }
 
+                        if (!answerFound)
+                        {
+                            // Post every group and every chore in every group
+                            // A lot of data
+                            if (command.Contains("all"))
+                            {
+                                var choreGroupDetail = GroupMeChoreGroupDetail.Name;
+                                var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser;
+
+                                // If specific date requested use dates and don't include description
+                                if (dateSpecified)
+                                {
+                                    choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.ScheduleDates;
+                                }
+                                else
+                                {
+                                    choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.Schedule;
+                                    choreDetail = choreDetail | GroupMeChoreDetail.Description;
+                                }
+                                
+                                foreach (var choreGroup in ChoreModule.GetChoresForDate(DateTime.Now).Where(t => t.Chores.Count > 0))
+                                {
+                                    PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
+                                        choreGroupDetail, choreDetail);
+                                }
+
+                                answerFound = true;
+                            }
+                        }
+
+                        if (!answerFound)
+                        {
+                            // Usage details
+                            if (command.Contains("help"))
+                            {
+                                BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), "Commands: all, my/me/mine, person name, chore group name, chore name");
+                                BotPost(CloudConfigurationManager.GetSetting("GroupMeChoreBot"), "All commands can be combined with a relative or absolute date: tomorrow, next Monday, 9/2, last month, etc");
+
+                                answerFound = true;
+                            }
+                        }
                     }
 
-                    // Post every group with little detail
+                    // Post every group with minimal detail
                     if (!answerFound)
                     {
-                        var choreGroupDetail = GroupMeChoreGroupDetail.Name;
-                        var choreDetail = GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUser;
+                        var choreGroupDetail = GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ListChoreNames;
+                        var choreDetail = GroupMeChoreDetail.None;
 
                         // If specific date requested use dates and don't include description
                         if (dateSpecified)
@@ -165,20 +206,18 @@ namespace Automation.Modules
                         else
                         {
                             choreGroupDetail = choreGroupDetail | GroupMeChoreGroupDetail.Schedule;
-                            choreDetail = choreDetail | GroupMeChoreDetail.Description;
                         }
 
                         var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
                         foreach (var choreGroup in choreGroups.Where(t => t.Chores.Count > 0))
                         {
-                            PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
-                                choreGroupDetail, choreDetail);
+                            PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"), choreGroupDetail, choreDetail);
                         }
                     }
                 }
                 else if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), command);
+                    BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), "No commands for this bot");
                 }
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
@@ -204,7 +243,8 @@ namespace Automation.Modules
 
                     // Padding at end
                     if (choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.Schedule) ||
-                        choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ScheduleDates))
+                        choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ScheduleDates) ||
+                        choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ListChoreNames))
                     {
                         text += " - ";
                     }
@@ -230,7 +270,8 @@ namespace Automation.Modules
                     }
 
                     // Padding at end
-                    if (choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ScheduleDates))
+                    if (choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ScheduleDates) ||
+                        choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ListChoreNames))
                     {
                         text += " - ";
                     }
@@ -241,6 +282,22 @@ namespace Automation.Modules
                 {
                     text += choreGroup.CurrentRecurrenceStart.ToShortDateString();
                     text += " to " + choreGroup.CurrentRecurrenceEnd.ToShortDateString();
+
+                    // Padding at end
+                    if (choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ListChoreNames))
+                    {
+                        text += " - ";
+                    }
+                }
+
+                // List chore names in header
+                if (choreGroupDetail.HasFlag(GroupMeChoreGroupDetail.ListChoreNames))
+                {
+                    foreach(var chore in choreGroup.Chores)
+                    {
+                        text += chore.Name + ", ";
+                    }
+                    text = text.Substring(0, text.Length - 2); // remove final comma and space
                 }
 
                 // Post header message
