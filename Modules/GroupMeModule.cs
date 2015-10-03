@@ -221,6 +221,19 @@ namespace Automation.Modules
                 }
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
+
+            Get["/chorebot/nag/{group}"] = _ => {
+                this.RequiresClaims(new[] { "ChoreBotNag" });
+
+                var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
+                var choreGroup = choreGroups.Single(t => t.Name.Equals(_.group));
+                
+                PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
+                    GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ScheduleDates,
+                    GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUserMention);
+
+                return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
+            };
         }
         
         private void PostChoreGroup(ChoreGroup choreGroup, string botId, GroupMeChoreGroupDetail choreGroupDetail, GroupMeChoreDetail choreDetail)
@@ -352,8 +365,15 @@ namespace Automation.Modules
                         // Use Current User w/ mentioning
                         if (choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention) && group != null)
                         {
-                            var groupMeUser = group.members.Single(t => t.id == chore.User.GroupMeId);
-                            text += " - @" + groupMeUser.nickname;
+                            var groupMeUser = group.members.SingleOrDefault(t => t.id == chore.User.GroupMeId);
+                            if (groupMeUser == null)
+                            {
+                                text += " - @" + chore.User.UserName;
+                            }
+                            else
+                            {
+                                text += " - @" + groupMeUser.nickname;
+                            }
                         }
                     }
                 }

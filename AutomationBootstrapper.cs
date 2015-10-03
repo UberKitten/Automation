@@ -39,7 +39,7 @@ namespace Automation
                     return new User
                     {
                         UserName = "Test",
-                        Claims = new string[] { "Garage", "Tag", "HVAC", "GroupMe", "Torrent" }
+                        Claims = new string[] { "Garage", "Tag", "HVAC", "GroupMe", "Torrent", "ChoreBotNag" }
                     };
                 }
 #endif
