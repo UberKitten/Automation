@@ -10,6 +10,13 @@ namespace Automation.Models
         public string Name { get; set; }
     }
 
+    public class GroupMeBotPost
+    {
+        public string text { get; set; }
+        public string bot_id { get; set; }
+        public List<IGroupMeAttachment> attachments { get; set; }
+    }
+
     public class GroupMeChatMessage
     {
         public string avatar_url { get; set; }
@@ -94,14 +101,15 @@ namespace Automation.Models
         public string monitorAlertContacts { get; set; }
     }
 
-    public abstract class GroupMeAttachment
+    public interface IGroupMeAttachment
     {
-        public string type { get; set; }
+        string type { get; }
     }
 
-    public class GroupMeAttachmentMention : GroupMeAttachment
+    public class GroupMeAttachmentMention : IGroupMeAttachment
     {
-        public List<string> user_ids { get; set; }
+        public string type { get { return "mentions";  } }
+        public List<long> user_ids { get; set; }
         public List<List<int>> loci { get; set; }
     }
 

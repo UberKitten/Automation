@@ -459,17 +459,26 @@ namespace Automation.Modules
             return group.Data.response;
         }
 
-        public static void BotPost(string botId, string message)
+        public static void BotPost(string botId, string message, List<IGroupMeAttachment> attachments = null)
+        {
+            BotPost(new GroupMeBotPost
+            {
+                text = message,
+                bot_id = botId,
+                attachments = attachments
+            });
+        }
+
+        public static void BotPost(GroupMeBotPost botPost)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(botPost.text);
 #else
             System.Threading.Thread.Sleep(750);
             var client = new RestClient("https://api.groupme.com/v3");
 
             var request = new RestRequest("bots/post", Method.POST);
-            request.AddParameter("bot_id", botId);
-            request.AddParameter("text", message);
+            request.AddJsonBody(botPost);
 
             var response = client.Execute(request);
             if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
