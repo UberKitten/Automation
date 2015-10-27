@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Automation", "Automation.csproj", "{A71BAC2B-9089-4E76-90A7-6FF1550FDB00}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HVAC", "HVAC\HVAC.csproj", "{F048EBD4-1D02-428A-AC3A-597AB3982E9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChoreBot", "ChoreBot\ChoreBot.csproj", "{D4CE18C1-5E3D-46FE-B621-C58179D2C884}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{F048EBD4-1D02-428A-AC3A-597AB3982E9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F048EBD4-1D02-428A-AC3A-597AB3982E9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F048EBD4-1D02-428A-AC3A-597AB3982E9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4CE18C1-5E3D-46FE-B621-C58179D2C884}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4CE18C1-5E3D-46FE-B621-C58179D2C884}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4CE18C1-5E3D-46FE-B621-C58179D2C884}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4CE18C1-5E3D-46FE-B621-C58179D2C884}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
