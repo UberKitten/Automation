@@ -244,12 +244,21 @@ namespace Automation.Modules
                 this.RequiresClaims(new[] { "ChoreBotNag" });
 
                 var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
-                var choreGroup = choreGroups.Single(t => t.Name.Equals(_.group));
+                var choreGroup = choreGroups.SingleOrDefault(t => t.Name.Equals(_.group));
                 
+                if (choreGroup == null)
+                {
+                    return Negotiate.WithStatusCode(HttpStatusCode.BadRequest);
+                }
+                
+                if (choreGroup.Chores.Count == 0)
+                {
+                    return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
+                }
+
                 PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
                     GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ScheduleDates,
                     GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUserMention);
-
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
         }
