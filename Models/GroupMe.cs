@@ -94,6 +94,17 @@ namespace Automation.Models
         public string monitorAlertContacts { get; set; }
     }
 
+    public abstract class GroupMeAttachment
+    {
+        public string type { get; set; }
+    }
+
+    public class GroupMeAttachmentMention : GroupMeAttachment
+    {
+        public List<string> user_ids { get; set; }
+        public List<List<int>> loci { get; set; }
+    }
+
     [Flags]
     public enum GroupMeChoreGroupDetail
     {
