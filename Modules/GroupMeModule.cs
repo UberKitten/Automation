@@ -242,28 +242,40 @@ namespace Automation.Modules
 
             Get["/chorebot/nag/{group}"] = _ => {
                 this.RequiresClaims(new[] { "ChoreBotNag" });
-
-                var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
-                var choreGroup = choreGroups.SingleOrDefault(t => t.Name.Equals(_.group));
                 
-                if (choreGroup == null)
-                {
-                    return Negotiate.WithStatusCode(HttpStatusCode.BadRequest);
-                }
-                
-                if (choreGroup.Chores.Count == 0)
+                if (NagChoreGroup(_.group))
                 {
                     return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
                 }
-
-                PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
-                    GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ScheduleDates,
-                    GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUserMention);
-                return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
+                else
+                { 
+                    return Negotiate.WithStatusCode(HttpStatusCode.BadRequest);
+                }
             };
         }
         
-        private void PostChoreGroup(ChoreGroup choreGroup, string botId, GroupMeChoreGroupDetail choreGroupDetail, GroupMeChoreDetail choreDetail)
+        public static bool NagChoreGroup(string group)
+        {
+            var choreGroups = ChoreModule.GetChoresForDate(DateTime.Now);
+            var choreGroup = choreGroups.SingleOrDefault(t => t.Name.Equals(group));
+
+            if (choreGroup == null)
+            {
+                return false;
+            }
+
+            if (choreGroup.Chores.Count == 0)
+            {
+                return true;
+            }
+
+            PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
+                GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ScheduleDates,
+                GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUserMention);
+            return true;
+        }
+
+        public static void PostChoreGroup(ChoreGroup choreGroup, string botId, GroupMeChoreGroupDetail choreGroupDetail, GroupMeChoreDetail choreDetail)
         {
             GroupMeGroup group = null;
             // Only get group info if we need it to @mention
@@ -354,7 +366,7 @@ namespace Automation.Modules
             }
         }
         
-        private void PostChore(Chore chore, string botId, GroupMeChoreDetail choreDetail, GroupMeGroup group = null)
+        public static void PostChore(Chore chore, string botId, GroupMeChoreDetail choreDetail, GroupMeGroup group = null)
         {
             // Only get group info if we need it to @mention
             if (group == null && choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention))
@@ -447,7 +459,7 @@ namespace Automation.Modules
             }
         }
 
-        private GroupMeGroup GetGroupInfo(string groupId)
+        private static GroupMeGroup GetGroupInfo(string groupId)
         {
             var client = new RestClient("https://api.groupme.com/v3");
 
