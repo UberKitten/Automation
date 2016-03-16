@@ -47,6 +47,7 @@ namespace Automation.Modules
                 var commandRegex = Regex.Match(text, @"\S+ (.*)");
                 var command = commandRegex.Groups[commandRegex.Groups.Count - 1].Value.ToLower();
 
+                /*
                 if (firstword.Equals("@ChoreBot", StringComparison.CurrentCultureIgnoreCase))
                 {
                     bool answerFound = false;
@@ -233,7 +234,8 @@ namespace Automation.Modules
                         }
                     }
                 }
-                else if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
+                else */
+                if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
                 {
                     BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), "No commands for this bot");
                 }
