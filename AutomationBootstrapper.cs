@@ -50,7 +50,7 @@ namespace Automation
                     {
                         sql.Open();
                         var check = sql.CreateCommand();
-                        check.CommandText = "SELECT [User].UserName, Claim.Name FROM Token JOIN [User] on [User].Id = Token.UserId JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
+                        check.CommandText = "SELECT [User].UserName, Claim.Name FROM Token JOIN [User] on [User].Id = Token.UserId LEFT JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
                         check.Parameters.AddWithValue("token", token);
 
                         var user = new User();
@@ -59,7 +59,12 @@ namespace Automation
                             while (reader.Read())
                             {
                                 user.UserName = reader.GetString(0);
-                                ((List<String>)user.Claims).Add(reader.GetString(1));
+
+                                // Don't add a NULL claim if user doesn't have any claims
+                                if (!reader.IsDBNull(1))
+                                { 
+                                    ((List<String>)user.Claims).Add(reader.GetString(1));
+                                }
                             }
                         }
 
