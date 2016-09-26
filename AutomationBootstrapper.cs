@@ -1,9 +1,9 @@
-﻿using Microsoft.Azure;
-using Nancy;
+﻿using Nancy;
 using Nancy.Authentication.Stateless;
 using Nancy.Security;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -46,7 +46,7 @@ namespace Automation
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
-                    using (var sql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+                    using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
                     {
                         sql.Open();
                         var check = sql.CreateCommand();

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Nancy.Security;
-using Microsoft.Azure;
 using System.Data.SqlClient;
 using Microsoft.CSharp.RuntimeBinder;
+using System.Configuration;
 
 namespace Automation.Modules
 {
@@ -37,7 +37,7 @@ namespace Automation.Modules
 
         private void AddEvent(int sourceId, string descriptionName, double value)
         {
-            using (var sql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+            using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
             {
                 sql.Open();
                 var insert = sql.CreateCommand();

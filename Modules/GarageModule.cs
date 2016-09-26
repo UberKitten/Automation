@@ -6,7 +6,7 @@ using System.Web;
 using Nancy.Security;
 using Automation.Models;
 using System.Data.SqlClient;
-using Microsoft.Azure;
+using System.Configuration;
 
 namespace Automation.Modules
 {
@@ -20,7 +20,7 @@ namespace Automation.Modules
 
             Get["/garage/status"] = _ =>
                 {
-                    using (var sql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+                    using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
                     {
                         sql.Open();
                         var check = sql.CreateCommand();

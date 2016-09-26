@@ -1,5 +1,4 @@
 ﻿using Automation.Models;
-using Microsoft.Azure;
 using Nancy;
 using System;
 using System.Collections;
@@ -8,6 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using Nancy.Security;
+using System.Configuration;
 
 namespace Automation.Modules
 {
@@ -30,7 +30,7 @@ namespace Automation.Modules
         {
             var result = new List<ChoreGroup>();
 
-            using (var choreGroupSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+            using (var choreGroupSql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
             {
                 choreGroupSql.Open();
 
@@ -59,7 +59,7 @@ namespace Automation.Modules
 
                         var choreGroupId = choreGroupsReader.GetInt32(0);
 
-                        using (var choreSql = new SqlConnection(CloudConfigurationManager.GetSetting("DatabaseConnection")))
+                        using (var choreSql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
                         {
                             choreSql.Open();
 

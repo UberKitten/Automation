@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Nancy.Security;
-using Microsoft.Azure;
 using Nancy.ModelBinding;
 using Automation.Models;
 using System.Text.RegularExpressions;
+using System.Configuration;
 
 namespace Automation.Modules
 {
@@ -22,7 +22,7 @@ namespace Automation.Modules
             {
                 this.RequiresClaims(new[] { "Torrent" });
                 var model = this.Bind<GroupMeTorrentFinished>();
-                BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), model.Name + " is finished");
+                BotPost(ConfigurationManager.AppSettings["GroupMeTorrentBot"], model.Name + " is finished");
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
 
@@ -32,7 +32,7 @@ namespace Automation.Modules
                 var model = this.Bind<GroupMeUptimeRobotAlert>();
 
                 var text = model.monitorFriendlyName + " is " + (model.alertType == 1 ? "down" : "up");
-                BotPost(CloudConfigurationManager.GetSetting("GroupMeAutomationBot"), text);
+                BotPost(ConfigurationManager.AppSettings["GroupMeAutomationBot"], text);
 
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
@@ -237,7 +237,7 @@ namespace Automation.Modules
                 else */
                 if (firstword.Equals("@TorrentBot", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    BotPost(CloudConfigurationManager.GetSetting("GroupMeTorrentBot"), "No commands for this bot");
+                    BotPost(ConfigurationManager.AppSettings["GroupMeTorrentBot"], "No commands for this bot");
                 }
                 return Negotiate.WithStatusCode(HttpStatusCode.NoContent);
             };
@@ -271,7 +271,7 @@ namespace Automation.Modules
                 return true;
             }
 
-            PostChoreGroup(choreGroup, CloudConfigurationManager.GetSetting("GroupMeChoreBot"),
+            PostChoreGroup(choreGroup, ConfigurationManager.AppSettings["GroupMeChoreBot"],
                 GroupMeChoreGroupDetail.Name | GroupMeChoreGroupDetail.ScheduleDates,
                 GroupMeChoreDetail.Name | GroupMeChoreDetail.CurrentUserMention);
             return true;
@@ -283,7 +283,7 @@ namespace Automation.Modules
             // Only get group info if we need it to @mention
             if (choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention))
             {
-                group = GetGroupInfo(CloudConfigurationManager.GetSetting("GroupMeGroupId"));
+                group = GetGroupInfo(ConfigurationManager.AppSettings["GroupMeGroupId"]);
             }
 
             // Not "None"
@@ -373,7 +373,7 @@ namespace Automation.Modules
             // Only get group info if we need it to @mention
             if (group == null && choreDetail.HasFlag(GroupMeChoreDetail.CurrentUserMention))
             {
-                group = GetGroupInfo(CloudConfigurationManager.GetSetting("GroupMeGroupId"));
+                group = GetGroupInfo(ConfigurationManager.AppSettings["GroupMeGroupId"]);
             }
 
             // Not "None"
@@ -467,7 +467,7 @@ namespace Automation.Modules
 
             var request = new RestRequest("groups/{id}", Method.GET);
             request.AddUrlSegment("id", groupId);
-            request.AddParameter("token", CloudConfigurationManager.GetSetting("GroupMeAccessToken"));
+            request.AddParameter("token", ConfigurationManager.AppSettings["GroupMeAccessToken"]);
 
             var group = client.Execute<GroupMeResponseWrapper<GroupMeGroup>>(request);
             return group.Data.response;
