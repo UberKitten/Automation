@@ -16,10 +16,6 @@ namespace Automation
         {
             base.ApplicationStartup(container, pipelines);
 
-#if !DEBUG
-            pipelines.BeforeRequest.AddItemToEndOfPipeline(SecurityHooks.RequiresHttps(true));
-#endif
-
             var statelessAuthenticationConfiguration = new StatelessAuthenticationConfiguration(context =>
             {
                 string token = context.Request.Headers["X-AUTH-TOKEN"].FirstOrDefault();
@@ -31,18 +27,7 @@ namespace Automation
                 {
                     token = context.Request.Cookies["TOKEN"];
                 }
-
-#if DEBUG
-                var ip = System.Net.IPAddress.Parse(context.Request.UserHostAddress);
-                if (token == null && System.Net.IPAddress.IsLoopback(ip))
-                {
-                    return new User
-                    {
-                        UserName = "Test",
-                        Claims = new string[] { "Garage", "Tag", "HVAC", "GroupMe", "Torrent", "ChoreBotNag" }
-                    };
-                }
-#endif
+                context.Request.Cookies["TOKEN"] = token;
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
@@ -50,7 +35,11 @@ namespace Automation
                     {
                         sql.Open();
                         var check = sql.CreateCommand();
-                        check.CommandText = "SELECT [User].UserName, Claim.Name FROM Token JOIN [User] on [User].Id = Token.UserId LEFT JOIN Claim on Claim.UserId = [User].Id WHERE Token.Value = @token";
+                        check.CommandText = @"SELECT [User].UserName, [Claim].Name FROM [Token]
+JOIN [User] on [User].Id = [Token].UserId
+LEFT JOIN [UserClaim] on [UserClaim].UserId = [User].Id
+LEFT JOIN [Claim] on [Claim].Id = [UserClaim].ClaimId
+WHERE [Token].Value = @token";
                         check.Parameters.AddWithValue("token", token);
 
                         var user = new User();
