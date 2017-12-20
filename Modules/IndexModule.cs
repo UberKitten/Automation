@@ -11,7 +11,17 @@ namespace Automation.Modules
     {
         public IndexModule()
         {
-            Get["/"] = _ => "It works!";
+            Get["/"] = _ =>
+            {
+                if (Context.CurrentUser == null)
+                {
+                    return "No auth";
+                }
+                else
+                {
+                    return Context.CurrentUser.ToString() ;
+                }
+            };
 
             // Nancy does not like returning an empty model and an empty view (like only a status code)
             // So we give it a "model" if there's no claim specified using default routing
