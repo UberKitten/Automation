@@ -29,10 +29,12 @@ namespace Automation
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
-                    var db = Database.GetConnection();
-                    return db.GetUser(token);
+                    using (var db = Database.GetConnection())
+                    {
+                        return db.GetUser(token);
+                    }
                 }
-
+                
                 return null;
             });
 
