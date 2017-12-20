@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using SQLiteNetExtensions.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +9,15 @@ namespace Automation.Models
 {
     public class Token
     {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
 
+        [PrimaryKey]
+        public string Value { get; set; }
+
+        [ForeignKey(typeof(User))]
         public int UserId { get; set; }
 
-        [Indexed]
-        public string Value { get; set; }
+        [OneToOne(CascadeOperations = CascadeOperation.All)]
+        public User User { get; set; }
+
     }
 }

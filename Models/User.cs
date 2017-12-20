@@ -1,5 +1,7 @@
-﻿using Nancy.Security;
+﻿using Automation.Models;
+using Nancy.Security;
 using SQLite;
+using SQLiteNetExtensions.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,6 @@ namespace Automation
     {
         public User()
         {
-            Claims = new List<String>();
             GroupMeId = -1;
         }
 
@@ -21,18 +22,17 @@ namespace Automation
 
         public string UserName { get; set; }
 
-        [Ignore]
-        public string Token { get; set; }
-
         public int GroupMeId { get; set; }
+        
+        [ManyToMany(typeof(UserClaim))]
+        public List<Claim> ClaimObjects { get; set; }
 
-        [XmlIgnoreAttribute]
-        [Ignore]
-        public IEnumerable<string> Claims { get; set; }
-
-        [XmlIgnoreAttribute]
-        [Ignore]
-        public IEnumerable<string> ClaimURLs { get; set; }
+        // Needed for IUserIdentity
+        public IEnumerable<string> Claims { get
+            {
+                return ClaimObjects.Select(t => t.Name);
+            }
+        }
 
         public override string ToString()
         {
@@ -41,11 +41,6 @@ namespace Automation
             if (UserName != null)
             {
                 output += "UserName: " + UserName + Environment.NewLine;
-            }
-            
-            if (Token != null)
-            {
-                output += "Token " + Token.Length + " characters" + Environment.NewLine;
             }
 
             if (GroupMeId != -1)
@@ -56,11 +51,6 @@ namespace Automation
             if (Claims != null)
             {
                 output += "Claims: " + String.Join(Environment.NewLine, Claims) + Environment.NewLine;
-            }
-
-            if (ClaimURLs != null)
-            {
-                output += "ClaimURLs: " + String.Join(Environment.NewLine, ClaimURLs) + Environment.NewLine;
             }
 
             return output;

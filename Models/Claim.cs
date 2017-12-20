@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using SQLiteNetExtensions.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,11 @@ namespace Automation.Models
 
         [Indexed]
         public string Name { get; set; }
+        
+        [ManyToMany(typeof(UserClaim))]
+        public List<User> Users { get; set; }
+
+        [OneToMany]
+        public List<ClaimURL> ClaimURLs { get; set; }
     }
 }
