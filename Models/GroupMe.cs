@@ -112,24 +112,5 @@ namespace Automation.Models
         public List<long> user_ids { get; set; }
         public List<List<int>> loci { get; set; }
     }
-
-    [Flags]
-    public enum GroupMeChoreGroupDetail
-    {
-        None = 0,
-        Name = 1 << 0,
-        Schedule = 1 << 1,
-        ScheduleDates = 1 << 2,
-        ListChoreNames = 1 << 3
-    }
-
-    [Flags]
-    public enum GroupMeChoreDetail
-    {
-        None = 0,
-        Name = 1 << 0,
-        Description = 1 << 1,
-        CurrentUser = 1 << 2,
-        CurrentUserMention = 1 << 3
-    }
+    
 }
