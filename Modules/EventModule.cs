@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Nancy.Security;
-using System.Data.SqlClient;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Configuration;
 
@@ -37,6 +36,7 @@ namespace Automation.Modules
 
         private void AddEvent(int sourceId, string descriptionName, double value)
         {
+            /*
             using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
             {
                 sql.Open();
@@ -50,6 +50,7 @@ namespace Automation.Modules
 
                 insert.ExecuteNonQuery();
             }
+            */
         }
     }
 }

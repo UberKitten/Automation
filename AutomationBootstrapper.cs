@@ -4,9 +4,7 @@ using Nancy.Security;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Web;
 
 namespace Automation
 {
@@ -31,7 +29,7 @@ namespace Automation
 
                 if (!String.IsNullOrWhiteSpace(token))
                 {
-                    using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
+                    /*using (var sql = new SqlConnection(ConfigurationManager.AppSettings["DatabaseConnection"]))
                     {
                         sql.Open();
                         var check = sql.CreateCommand();
@@ -76,7 +74,7 @@ WHERE [Token].Value = @token";
                         {
                             return user;
                         }
-                    }
+                    }*/
                 }
 
                 return null;
